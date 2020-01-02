@@ -5,13 +5,16 @@ import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll';
 import './App.css';
 
-import { setSearchField } from '../actions';
+import { setSearchField, requestCats } from '../actions';
 
 //Store が持つ状態stateをどのようにpropsに混ぜ込むかを決める
 //State情報をPropsとして扱うことができるということ。
 const mapStateToProps = state => {
     return {
-      searchField: state.searchField
+      searchField: state.searchCats.searchField,
+      cats: state.requestCats.cats,
+      ispending: state.requestCats.isPending,
+      error: state.requestCats.error
     }
 }
 
@@ -19,31 +22,22 @@ const mapStateToProps = state => {
 //Action関数をPropsとして扱うことができるということ。
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestCats: () => dispatch(requestCats())
   }
 }
 class App extends Component  {
-    constructor(){
-        super()
-        this.state = {
-            cats: [],
-            searchfield:''
-        }
-    }
-
+    
     componentDidMount(){
-      fetch('https://jsonplaceholder.typicode.com/users')
-        .then(response => response.json())
-        .then(users => this.setState({ cats:users }));
+      this.props.onRequestCats();
     }
 
     render(){
-        const {cats} = this.state;
-        const { searchField, onSearchChange } = this.props;
+        const { searchField, onSearchChange, cats, isPending } = this.props;
         const filteredCats = cats.filter(cat => {
             return cat.name.toLowerCase().includes(searchField.toLowerCase());
         })
-        return !cats.length?
+        return isPending ?
             <h1>Loading</h1> :
             (
            
